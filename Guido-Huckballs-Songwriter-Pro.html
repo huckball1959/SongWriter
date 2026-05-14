@@ -505,6 +505,36 @@
             box-sizing: border-box;
         }
         #printModeModal.open { display: flex; }
+        #printModeModal .section-length-modal-panel.print-mode-panel {
+            max-width: 520px;
+        }
+        #printModeModal .print-mode-help {
+            margin: 0 0 14px 0;
+            font-size: 12px;
+            line-height: 1.48;
+            color: #37474f;
+        }
+        #printModeModal .print-mode-help strong { color: #0d47a1; }
+        #printModeModal .print-mode-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        #printModeModal .print-mode-actions button {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 9px 10px;
+            font-size: 12px;
+            line-height: 1.25;
+        }
+        #printModeModal .print-mode-actions .print-mode-sub {
+            display: block;
+            font-size: 10px;
+            font-weight: 600;
+            opacity: 0.92;
+            margin-top: 3px;
+        }
         .section-def-toolbar-wrap {
             display: none;
             align-items: center;
@@ -902,6 +932,17 @@
             margin: var(--cheat-v-note-t) 0 var(--cheat-v-note-b) 0;
             line-height: var(--cheat-lh-note);
         }
+        .print-cheat-sheet-host .cheat-instrumental-one-line {
+            margin-top: 0;
+            margin-bottom: 5pt;
+        }
+        .print-cheat-sheet-host .cheat-edge-label-only {
+            margin-top: 0;
+            margin-bottom: 5pt;
+            font-style: normal;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+        }
         .print-cheat-sheet-host .cheat-sec-compact {
             margin: var(--cheat-v-compact-sec-t) 0 var(--cheat-v-compact-sec-b) 0;
             font-size: var(--cheat-fs-sec-compact);
@@ -910,6 +951,17 @@
             white-space: normal;
             word-break: break-word;
             line-height: var(--cheat-lh-chord-wrap);
+        }
+        .print-cheat-sheet-host.cheat-lyrics-plain .cheat-plain-line {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: var(--cheat-fs-lyric);
+            line-height: var(--cheat-lh-lyric);
+            margin: 0 0 var(--cheat-v-block-b) 0;
+            white-space: pre-wrap;
+        }
+        .print-cheat-sheet-host.cheat-lyrics-plain .cheat-plain-line.cheat-plain-empty {
+            color: #999;
+            font-style: italic;
         }
 
         @media print {
@@ -958,6 +1010,9 @@
             <button onclick="loadSong(); closeFileMenu();">📂 Open...</button>
             <button onclick="saveSongQuick(); closeFileMenu();">💾 Save</button>
             <button onclick="saveSongAs(); closeFileMenu();">💾 Save As…</button>
+            <button type="button" onclick="exportSongToTxt(); closeFileMenu();">📄 Export to TXT…</button>
+            <button type="button" onclick="exportSongToDoc(); closeFileMenu();">📝 Export to DOC…</button>
+            <button type="button" onclick="exportSongToLyricsTxt(); closeFileMenu();">📃 Export lyrics (TXT)…</button>
             <button type="button" onclick="openPrintModeModal(); closeFileMenu();">🖨 Print…</button>
             <button type="button" onclick="openUserManual(); closeFileMenu();">📖 User Manual…</button>
             <div class="menu-dropdown-sep"></div>
@@ -1126,14 +1181,34 @@
 </div>
 
 <div id="printModeModal" role="dialog" aria-modal="true" aria-labelledby="printModeModalTitle">
-    <div class="section-length-modal-panel" onclick="event.stopPropagation()">
+    <div class="section-length-modal-panel print-mode-panel" onclick="event.stopPropagation()">
         <h3 id="printModeModalTitle">Print cheat sheet</h3>
-        <p><strong>Full</strong> — staff rows with chords + lyrics; <strong>intro</strong> and <strong>outro</strong> that begin on the <strong>first bar of a staff row</strong> collapse to one squashed line each so they do not repeat every row.<br>
-        <strong>Condensed</strong> — first Verse/Chorus/etc. is complete; later blocks of the <em>same type</em> skip repeated chords when they match the first, or show only changed lyrics (or a short “same as…” note). <strong>Intro</strong>, <strong>outro</strong>, and <strong>instrumental</strong> use one squashed chord line (plus lyrics when present).<br>
-        <strong>One page</strong> — print tries to keep the cheat sheet on <strong>one letter page</strong> by auto-shrinking type (down to about 8pt if needed) and tightening spacing while staying as large as possible up to 20pt.</p>
-        <div class="section-length-modal-actions" style="justify-content: flex-start; flex-wrap: wrap;">
-            <button type="button" class="primary" id="printModeFullBtn">Full</button>
-            <button type="button" class="primary" id="printModeCondensedBtn" style="background:#5e35b1;border-color:#311b92">Condensed</button>
+        <p class="print-mode-help">
+            <strong>Full</strong> — every staff row: monospace chord line + lyrics. Intro/outro that <em>start on the first bar of a row</em> print as a single line (<strong>INTRO</strong> or <strong>OUTRO</strong>); later rows in that section are skipped. <strong>INSTRUMENTAL</strong> is one line for the whole block.<br>
+            <strong>Condensed</strong> — first Verse/Chorus/etc. is complete; later same-type blocks omit matching chords/lyrics (or show only changed lines / a short “same as…” note). Intro, outro, and instrumental each print as a single line: <strong>INTRO</strong>, <strong>OUTRO</strong>, or <strong>INSTRUMENTAL</strong> (no bar rows).<br>
+            <strong>One page</strong> — auto-shrink type (about 8–20pt) and tighten vertical spacing so the sheet fits on <strong>one U.S. Letter</strong> page when possible.<br>
+            <strong>Multi-page</strong> — comfortable fixed type (~13pt); sheet may span more than one printed page.<br>
+            <strong>Lyrics only</strong> — section headings and lyric text only (no chord rows); intro/outro/instrumental use the same one-line INTRO / OUTRO / INSTRUMENTAL treatment.<br>
+            <strong>Lyrics plain</strong> — one lyric line after another: no title, chords, section names, or intro/outro/instrumental cues (good for a drummer cheat or a bare .txt).
+        </p>
+        <div class="print-mode-actions">
+            <button type="button" class="primary" id="printModeFullOnePageBtn" title="Chords + lyrics, shrink to fit one letter page">
+                Full · one page<span class="print-mode-sub">Chords + lyrics, auto-fit</span>
+            </button>
+            <button type="button" class="primary" id="printModeCondensedOnePageBtn" style="background:#5e35b1;border-color:#311b92" title="Condensed chords + lyrics, one page">
+                Condensed · one page<span class="print-mode-sub">Skip repeats, auto-fit</span>
+            </button>
+            <button type="button" class="primary" id="printModeFullMultiBtn" title="Chords + lyrics at readable size; may use several pages">
+                Full · multi-page<span class="print-mode-sub">Readable size</span>
+            </button>
+            <button type="button" class="primary" id="printModeLyricsOnlyBtn" style="background:#00695c;border-color:#004d40" title="Lyrics and section labels only">
+                Lyrics only<span class="print-mode-sub">No chord rows</span>
+            </button>
+            <button type="button" class="primary" id="printModeLyricsPlainBtn" style="background:#37474f;border-color:#263238" title="Lyrics text only; no chords or labels">
+                Lyrics plain<span class="print-mode-sub">Text only, one page</span>
+            </button>
+        </div>
+        <div class="section-length-modal-actions" style="margin-top: 14px; justify-content: flex-end;">
             <button type="button" class="ghost" id="printModeCancelBtn">Cancel</button>
         </div>
     </div>
@@ -1204,7 +1279,8 @@
 
             <h2>Files and tabs</h2>
             <ul>
-                <li><strong>File ▾</strong>: New Song Sheet, Open (JSON), <strong>Save</strong> (overwrite linked file when the browser supports it), <strong>Save As…</strong>, Print, Recent Sheets, and <strong>User Manual</strong>. After Ctrl+F5, the same tab restores your sheet from session memory even if <strong>Keep on Refresh</strong> is off.</li>
+                <li><strong>File ▾</strong>: New Song Sheet, Open (JSON), <strong>Save</strong> (overwrite linked file when the browser supports it), <strong>Save As…</strong>, <strong>Export to TXT</strong> / <strong>Export to DOC</strong> (plain lyrics + chords layout; .doc is HTML Word can open), <strong>Export lyrics (TXT)</strong> (lyric lines only, no chords or section labels), Print, Recent Sheets, and <strong>User Manual</strong>. After Ctrl+F5, the same tab restores your sheet from session memory even if <strong>Keep on Refresh</strong> is off.</li>
+                <li><strong>Print…</strong> — Full / Condensed / Lyrics only / <strong>Lyrics plain</strong> (one page, lyric text only); Full and Lyrics only use one-page or multi-page layout where offered. Intro, outro, and instrumental print as single lines (INTRO, OUTRO, INSTRUMENTAL) in Full, Condensed, and Lyrics only — not in Lyrics plain.</li>
                 <li><strong>Tabs</strong> at the top switch between open songs. Use the ✕ on a tab to close it.</li>
             </ul>
 
@@ -1312,8 +1388,11 @@ const sectionLengthModalInput = document.getElementById("sectionLengthModalInput
 const sectionLengthModalOk = document.getElementById("sectionLengthModalOk");
 const sectionLengthModalCancel = document.getElementById("sectionLengthModalCancel");
 const printModeModal = document.getElementById("printModeModal");
-const printModeFullBtn = document.getElementById("printModeFullBtn");
-const printModeCondensedBtn = document.getElementById("printModeCondensedBtn");
+const printModeFullOnePageBtn = document.getElementById("printModeFullOnePageBtn");
+const printModeCondensedOnePageBtn = document.getElementById("printModeCondensedOnePageBtn");
+const printModeFullMultiBtn = document.getElementById("printModeFullMultiBtn");
+const printModeLyricsOnlyBtn = document.getElementById("printModeLyricsOnlyBtn");
+const printModeLyricsPlainBtn = document.getElementById("printModeLyricsPlainBtn");
 const printModeCancelBtn = document.getElementById("printModeCancelBtn");
 const sectionDefToolbarWrap = document.getElementById("sectionDefToolbarWrap");
 const sectionDefToolbarLabel = document.getElementById("sectionDefToolbarLabel");
@@ -1549,8 +1628,10 @@ let measureRangeMenuStart = null;
 let contextMenuLyricsOnlyLine = null;
 let toastTimer = null;
 let isPrinting = false;
-/** "full" | "condensed" — set from Print dialog before `beforeprint`. */
+/** "full" | "condensed" | "lyricsOnly" | "lyricsPlain" — set from Print dialog before `beforeprint`. */
 let printCheatSheetMode = "full";
+/** When true, run shrink-to-fit for one U.S. Letter page before print. */
+let printCheatSheetOnePage = true;
 /** Monospace chord row length for print (≈ full usable letter width at typical sizes). */
 const PRINT_CHEAT_MONOSPACE_COLS = 100;
 let audioCtx = null;
@@ -7935,6 +8016,27 @@ function buildCheatChordMonospaceLine(song, line, rowChars) {
     return row.join("").replace(/\s+$/g, "");
 }
 
+/** Plain-text chord row (no HTML entities) for .txt / .doc export. */
+function buildPlainChordMonospaceLine(song, line, rowChars) {
+    const rc = Math.max(40, rowChars | 0);
+    const row = Array(rc).fill(" ");
+    const list = (song.chords || []).filter(ch => ch.line === line).sort((a, b) => a.x - b.x);
+    let lastEnd = -1;
+    for (const ch of list) {
+        const sym = `${ch.symbol || ""}`.trim() || "?";
+        const tok = `[${sym}]`;
+        if (tok.length > rc) continue;
+        let pos = Math.round(((ch.x - STAVE_LEFT) / DRAW_WIDTH) * (rc - tok.length));
+        pos = Math.max(0, Math.min(rc - tok.length, pos));
+        if (pos <= lastEnd) pos = lastEnd + 1;
+        if (pos + tok.length > rc) pos = rc - tok.length;
+        if (pos < 0 || pos <= lastEnd) continue;
+        for (let i = 0; i < tok.length; i++) row[pos + i] = tok[i];
+        lastEnd = pos + tok.length - 1;
+    }
+    return row.join("").replace(/\s+$/g, "");
+}
+
 /** Remove `{` `}` only (per-measure comparisons). */
 function stripCurlyBracesOnly(s) {
     return String(s ?? "").replace(/[{}]/g, "");
@@ -8136,6 +8238,7 @@ function buildPrintCheatSheetFullHtml(song) {
         return html;
     }
     const allSegs = buildPrintLyricSegmentsForMeasureRange(song, 1, maxM);
+    const printedInst = new Set();
     for (let line = 0; line < song.lines; line++) {
         if (isLyricsOnlyLine(song, line)) {
             const meta = song.lyricsOnlyLineMeta && song.lyricsOnlyLineMeta[line];
@@ -8149,6 +8252,13 @@ function buildPrintCheatSheetFullHtml(song) {
         const edgeSec = getIntroOutroCompactSectionIfLineStartsIt(song, line);
         if (edgeSec) {
             html += buildCompactEdgeSectionCheatHtml(song, edgeSec);
+            continue;
+        }
+        if (shouldSkipLineAfterInstrumentalPrinted(song, line, printedInst)) continue;
+        const instSecPrint = takeInstrumentalSectionIfFirstIntersectingRow(song, line, printedInst);
+        if (instSecPrint) {
+            html += buildInstrumentalSectionOneLinePrintHtml();
+            printedInst.add(instPrintKey(instSecPrint));
             continue;
         }
         html += buildOneGridStaffCheatBlock(song, line, rowChars, true, allSegs);
@@ -8174,6 +8284,65 @@ function isIntroOrOutroKindSection(sec) {
 
 function sectionMeasureCount(sec) {
     return sec.endMeasure - sec.startMeasure + 1;
+}
+
+function instPrintKey(sec) {
+    return `${sec.startMeasure}-${sec.endMeasure}`;
+}
+
+/** True when this staff row only shows measures already covered by a printed instrumental one-liner. */
+function shouldSkipLineAfterInstrumentalPrinted(song, line, printedInst) {
+    const fm = getFirstMeasureOnLine(song, line);
+    if (fm == null || isLyricsOnlyLine(song, line)) return false;
+    const mpl = song.measuresPerLine === 2 ? 2 : 4;
+    const maxM = getTotalMeasures(song);
+    const rowEnd = Math.min(maxM, fm + mpl - 1);
+    for (let m = fm; m <= rowEnd; m++) {
+        const sec = getSectionContainingMeasure(song, m);
+        if (sec && isInstrumentalKindSection(sec) && printedInst.has(instPrintKey(sec))) return true;
+    }
+    return false;
+}
+
+/**
+ * If this row is the first staff row that intersects an instrumental section (in sheet order),
+ * return that section; otherwise null. Does not mutate `printedInst`.
+ */
+function takeInstrumentalSectionIfFirstIntersectingRow(song, line, printedInst) {
+    const fm = getFirstMeasureOnLine(song, line);
+    if (fm == null || isLyricsOnlyLine(song, line)) return null;
+    const mpl = song.measuresPerLine === 2 ? 2 : 4;
+    const maxM = getTotalMeasures(song);
+    const rowEnd = Math.min(maxM, fm + mpl - 1);
+    let touching = null;
+    for (let m = fm; m <= rowEnd; m++) {
+        const sec = getSectionContainingMeasure(song, m);
+        if (sec && isInstrumentalKindSection(sec)) {
+            touching = sec;
+            break;
+        }
+    }
+    if (!touching || printedInst.has(instPrintKey(touching))) return null;
+    for (let prev = 0; prev < line; prev++) {
+        if (isLyricsOnlyLine(song, prev)) continue;
+        const pfm = getFirstMeasureOnLine(song, prev);
+        if (pfm == null) continue;
+        const pend = Math.min(maxM, pfm + mpl - 1);
+        if (pend >= touching.startMeasure && pfm <= touching.endMeasure) return null;
+    }
+    return touching;
+}
+
+/** Single-line cheat-sheet entry for an instrumental block (no per-bar staff). */
+function buildInstrumentalSectionOneLinePrintHtml() {
+    return `<p class="cheat-note cheat-instrumental-one-line">INSTRUMENTAL</p>`;
+}
+
+/** One word only for intro/outro compact print (cheat sheet). */
+function buildIntroOutroLabelOnlyPrintHtml(sec) {
+    if (!sec) return "";
+    const word = isOutroKindSection(sec) ? "OUTRO" : "INTRO";
+    return `<p class="cheat-note cheat-edge-label-only">${word}</p>`;
 }
 
 function sectionLyricPartsArray(song, sm, em) {
@@ -8219,20 +8388,10 @@ function buildSquashedLyricLineForMeasures(song, sm, em) {
     return parts.map(t => ` ${t}`).join("").trimEnd();
 }
 
-/** One squashed chord + lyric block for a whole section (intro/outro compact print). */
+/** Intro/outro: single label line only (no chord/lyric rows). */
 function buildCompactEdgeSectionCheatHtml(song, sec) {
-    const sm = sec.startMeasure;
-    const em = sec.endMeasure;
-    const strip = buildSquashedChordStripForMeasures(song, sm, em);
-    const oneLy = buildSquashedLyricLineForMeasures(song, sm, em);
-    const labelEsc = escapeHtmlForPrintCheatsheet(formatSectionFlagText(sec));
-    let h = `<div class="cheat-sec cheat-sec-compact">${labelEsc}</div>`;
-    h += `<div class="cheat-block">`;
-    if (strip.trim()) h += `<div class="cheat-chords cheat-chords-wrap">${strip}</div>`;
-    if (oneLy) h += `<div class="cheat-lyrics">${escapeHtmlForPrintCheatsheet(oneLy)}</div>`;
-    else if (!strip.trim()) h += `<div class="cheat-lyrics" style="color:#999">—</div>`;
-    h += `</div>`;
-    return h;
+    void song;
+    return buildIntroOutroLabelOnlyPrintHtml(sec);
 }
 
 /** Only when the section begins on bar 1 of a staff row (avoids skipping mid-row bars). */
@@ -8306,6 +8465,10 @@ function buildLineOrderRunsForPrint(song) {
 }
 
 function appendSectionRunFullForCondensed(song, run, rowChars, html, allSegs) {
+    if (isInstrumentalKindSection(run.sec)) {
+        html += buildInstrumentalSectionOneLinePrintHtml();
+        return html;
+    }
     html += `<div class="cheat-sec">${escapeHtmlForPrintCheatsheet(formatSectionFlagText(run.sec))}</div>`;
     for (const line of run.lines) html += buildOneGridStaffCheatBlock(song, line, rowChars, false, allSegs);
     return html;
@@ -8325,24 +8488,31 @@ function appendSectionRunCondensed(song, run, rowChars, templateByGroup, html, a
     const edgeSquash = inst || isIntroKindSection(sec) || isOutroKindSection(sec);
 
     if (edgeSquash) {
-        const strip = buildSquashedChordStripForMeasures(song, sm, em);
-        const oneLy = buildSquashedLyricLineForMeasures(song, sm, em);
+        if (inst) {
+            if (!templateByGroup.has(gk)) {
+                templateByGroup.set(gk, { bars, chSig, lyParts: lyParts.slice() });
+                html += buildInstrumentalSectionOneLinePrintHtml();
+                return html;
+            }
+            const tpl = templateByGroup.get(gk);
+            if (tpl.bars === bars && tpl.chSig === chSig) {
+                return html;
+            }
+            html += buildInstrumentalSectionOneLinePrintHtml();
+            return html;
+        }
+        const edgeWordHtml = buildIntroOutroLabelOnlyPrintHtml(sec);
         if (!templateByGroup.has(gk)) {
             templateByGroup.set(gk, { bars, chSig, lyParts: lyParts.slice() });
-            html += `<div class="cheat-sec cheat-sec-compact">${labelEsc}</div>`;
-            if (strip) html += `<div class="cheat-chords cheat-chords-wrap">${strip}</div>`;
-            if (oneLy && !inst) html += `<div class="cheat-lyrics">${escapeHtmlForPrintCheatsheet(oneLy)}</div>`;
+            html += edgeWordHtml;
             return html;
         }
-        const tpl = templateByGroup.get(gk);
-        const sameLyrics = lySig === (tpl.lyParts || []).map(t => t.toLowerCase()).join("\n");
-        if (tpl.bars === bars && tpl.chSig === chSig && (inst || sameLyrics)) {
-            html += `<p class="cheat-note">${labelEsc} — same ${escapeHtmlForPrintCheatsheet(groupKeyFriendlyTitle(gk))} material as earlier; omitted.</p>`;
+        const tplIo = templateByGroup.get(gk);
+        const sameLyricsIo = lySig === (tplIo.lyParts || []).map(t => t.toLowerCase()).join("\n");
+        if (tplIo.bars === bars && tplIo.chSig === chSig && sameLyricsIo) {
             return html;
         }
-        html += `<div class="cheat-sec cheat-sec-compact">${labelEsc}</div>`;
-        if (strip) html += `<div class="cheat-chords cheat-chords-wrap">${strip}</div>`;
-        if (oneLy && !inst) html += `<div class="cheat-lyrics">${escapeHtmlForPrintCheatsheet(oneLy)}</div>`;
+        html += edgeWordHtml;
         return html;
     }
 
@@ -8402,8 +8572,146 @@ function buildPrintCheatSheetCondensedHtml(song) {
     return html;
 }
 
+function appendCheatLyricSegmentHtmlLyricsOnly(song, seg) {
+    const lyricEsc = escapeHtmlForPrintCheatsheet(seg.text || "");
+    let h = `<div class="cheat-block">`;
+    if (lyricEsc) h += `<div class="cheat-lyrics">${lyricEsc}</div>`;
+    else h += `<div class="cheat-lyrics" style="color:#999">—</div>`;
+    h += `</div>`;
+    return h;
+}
+
+/** Intro/outro: single INTRO / OUTRO line for lyrics-only print. */
+function buildCompactEdgeSectionLyricsOnlyHtml(song, sec) {
+    void song;
+    return buildIntroOutroLabelOnlyPrintHtml(sec);
+}
+
+/**
+ * One grid staff row for lyrics-only print: section label + lyric segments (no chord row).
+ */
+function buildOneGridStaffLyricsOnlyBlock(song, line, includeSectionHeader = true, allSegs = null) {
+    const maxM = getTotalMeasures(song);
+    const fm = getFirstMeasureOnLine(song, line);
+    if (fm == null) return "";
+    const segsAll = allSegs || buildPrintLyricSegmentsForMeasureRange(song, 1, maxM);
+    if (isGridLineInsideContinuingMarkedPrintSegment(segsAll, fm)) return "";
+    const lineSegs = segsAll.filter(seg => getMeasureBounds(song, seg.m0).line === line);
+    let chunk = "";
+    if (includeSectionHeader) {
+        const secStart = getSectionStartForMeasure(song, fm);
+        if (secStart) {
+            chunk += `<div class="cheat-sec">${escapeHtmlForPrintCheatsheet(formatSectionFlagText(secStart))}</div>`;
+        }
+    }
+    if (!lineSegs.length) {
+        chunk += `<div class="cheat-block"><div class="cheat-lyrics" style="color:#999">—</div></div>`;
+        return chunk;
+    }
+    for (const seg of lineSegs) chunk += appendCheatLyricSegmentHtmlLyricsOnly(song, seg);
+    return chunk;
+}
+
+/**
+ * Lyric lines only (sheet order): no section labels, chords, title, or intro/outro/instrumental cues.
+ * Lyrics-only rows contribute their textarea lines; grid rows contribute non-empty segment texts.
+ */
+function collectLyricsPlainLines(song) {
+    if (!song) return [];
+    ensureLineTypesLength(song);
+    const maxM = getTotalMeasures(song);
+    const out = [];
+    const allSegs = maxM >= 1 ? buildPrintLyricSegmentsForMeasureRange(song, 1, maxM) : [];
+    const printedInst = new Set();
+    for (let line = 0; line < song.lines; line++) {
+        if (isLyricsOnlyLine(song, line)) {
+            const body = `${song.lyrics[line] ?? ""}`;
+            for (const rawLine of body.split(/\r?\n/)) {
+                const t = stripCurlyLyricPrintMarkers(rawLine).trim();
+                if (t) out.push(t);
+            }
+            continue;
+        }
+        if (maxM < 1) continue;
+        if (shouldOmitGridLineForIntroOutroFullCompact(song, line)) continue;
+        if (getIntroOutroCompactSectionIfLineStartsIt(song, line)) continue;
+        if (shouldSkipLineAfterInstrumentalPrinted(song, line, printedInst)) continue;
+        const instSec = takeInstrumentalSectionIfFirstIntersectingRow(song, line, printedInst);
+        if (instSec) {
+            printedInst.add(instPrintKey(instSec));
+            continue;
+        }
+        const fm = getFirstMeasureOnLine(song, line);
+        if (fm == null) continue;
+        if (isGridLineInsideContinuingMarkedPrintSegment(allSegs, fm)) continue;
+        const lineSegs = allSegs.filter(seg => getMeasureBounds(song, seg.m0).line === line);
+        for (const seg of lineSegs) {
+            const t = stripCurlyLyricPrintMarkers(seg.text || "").trim();
+            if (t) out.push(t);
+        }
+    }
+    return out;
+}
+
+/** Print: plain lyric lines only (no header). */
+function buildPrintCheatSheetLyricsPlainHtml(song) {
+    if (!song) return "";
+    const plainLines = collectLyricsPlainLines(song);
+    if (!plainLines.length) {
+        return `<p class="cheat-plain-line cheat-plain-empty">No lyrics on this sheet yet.</p>`;
+    }
+    return plainLines.map(l => `<p class="cheat-plain-line">${escapeHtmlForPrintCheatsheet(l)}</p>`).join("");
+}
+
+function buildSongExportLyricsPlainText(song) {
+    const plainLines = collectLyricsPlainLines(song);
+    if (!plainLines.length) return "No lyrics on this sheet yet.\n";
+    return plainLines.join("\n") + "\n";
+}
+
+/** Lyrics-only print: section headings + lyrics; no chord monospace rows. */
+function buildPrintCheatSheetLyricsOnlyHtml(song) {
+    if (!song) return "";
+    ensureLineTypesLength(song);
+    const maxM = getTotalMeasures(song);
+    let html = buildPrintCheatSheetHeaderHtml(song);
+    if (maxM < 1) {
+        html += `<p class="cheat-lyrics">No measures on this sheet yet.</p>`;
+        return html;
+    }
+    const allSegs = buildPrintLyricSegmentsForMeasureRange(song, 1, maxM);
+    const printedInst = new Set();
+    for (let line = 0; line < song.lines; line++) {
+        if (isLyricsOnlyLine(song, line)) {
+            const meta = song.lyricsOnlyLineMeta && song.lyricsOnlyLineMeta[line];
+            const lab = meta ? escapeHtmlForPrintCheatsheet(formatLyricsOnlyFlagText(meta)) : "Lyrics row";
+            const body = escapeHtmlForPrintCheatsheet(song.lyrics[line] || "");
+            html += `<div class="cheat-only-label">${lab}</div>`;
+            html += `<div class="cheat-only-body">${body}</div>`;
+            continue;
+        }
+        if (shouldOmitGridLineForIntroOutroFullCompact(song, line)) continue;
+        const edgeSec = getIntroOutroCompactSectionIfLineStartsIt(song, line);
+        if (edgeSec) {
+            html += buildCompactEdgeSectionLyricsOnlyHtml(song, edgeSec);
+            continue;
+        }
+        if (shouldSkipLineAfterInstrumentalPrinted(song, line, printedInst)) continue;
+        const instSecPrint = takeInstrumentalSectionIfFirstIntersectingRow(song, line, printedInst);
+        if (instSecPrint) {
+            html += buildInstrumentalSectionOneLinePrintHtml();
+            printedInst.add(instPrintKey(instSecPrint));
+            continue;
+        }
+        html += buildOneGridStaffLyricsOnlyBlock(song, line, true, allSegs);
+    }
+    return html;
+}
+
 function buildPrintCheatSheetInnerHtml(song) {
     if (!song) return "";
+    if (printCheatSheetMode === "lyricsPlain") return buildPrintCheatSheetLyricsPlainHtml(song);
+    if (printCheatSheetMode === "lyricsOnly") return buildPrintCheatSheetLyricsOnlyHtml(song);
     if (printCheatSheetMode === "condensed") return buildPrintCheatSheetCondensedHtml(song);
     return buildPrintCheatSheetFullHtml(song);
 }
@@ -8411,9 +8719,12 @@ function buildPrintCheatSheetInnerHtml(song) {
 function openPrintModeModal() {
     if (!printModeModal) {
         printCheatSheetMode = "full";
+        printCheatSheetOnePage = true;
         window.print();
         return;
     }
+    printCheatSheetMode = "full";
+    printCheatSheetOnePage = true;
     printModeModal.classList.add("open");
 }
 
@@ -8421,8 +8732,14 @@ function closePrintModeModal() {
     if (printModeModal) printModeModal.classList.remove("open");
 }
 
-function startPrintWithMode(mode) {
-    printCheatSheetMode = mode === "condensed" ? "condensed" : "full";
+/** @param {"full"|"condensed"|"lyricsOnly"|"lyricsPlain"} mode @param {boolean} [onePage=true] */
+function startPrintWithOptions(mode, onePage) {
+    const m = String(mode || "full").trim().toLowerCase();
+    if (m === "condensed") printCheatSheetMode = "condensed";
+    else if (m === "lyricsplain" || m === "lyrics_plain" || m === "plainlyrics") printCheatSheetMode = "lyricsPlain";
+    else if (m === "lyricsonly" || m === "lyrics_only") printCheatSheetMode = "lyricsOnly";
+    else printCheatSheetMode = "full";
+    printCheatSheetOnePage = onePage !== false;
     closePrintModeModal();
     window.print();
 }
@@ -8538,6 +8855,11 @@ function applyCheatFontPackToHost(host, bodyPt) {
  */
 function applyPrintCheatSheetOnePageFit(host) {
     if (!host) return;
+    if (!printCheatSheetOnePage) {
+        applyCheatVerticalPackToHost(host, CHEAT_VERTICAL_PACKS[0]);
+        applyCheatFontPackToHost(host, 13);
+        return;
+    }
     const maxH = estimateCheatPrintMaxContentHeightPx();
     const condensed = document.body.classList.contains("print-condensed");
     const startPackIdx = condensed ? 1 : 0;
@@ -8600,6 +8922,8 @@ window.addEventListener("beforeprint", () => {
     isPrinting = true;
     if (printCheatSheetMode === "condensed") document.body.classList.add("print-condensed");
     if (printCheatSheetHost) {
+        printCheatSheetHost.classList.remove("cheat-lyrics-plain");
+        if (printCheatSheetMode === "lyricsPlain") printCheatSheetHost.classList.add("cheat-lyrics-plain");
         if (activeTabIndex >= 0 && tabs[activeTabIndex]) {
             printCheatSheetHost.innerHTML = buildPrintCheatSheetInnerHtml(tabs[activeTabIndex]);
             applyPrintCheatSheetOnePageFit(printCheatSheetHost);
@@ -8614,6 +8938,7 @@ window.addEventListener("afterprint", () => {
     isPrinting = false;
     document.body.classList.remove("print-condensed");
     if (printCheatSheetHost) {
+        printCheatSheetHost.classList.remove("cheat-lyrics-plain");
         printCheatSheetHost.innerHTML = "";
         printCheatSheetHost.removeAttribute("style");
     }
@@ -8655,6 +8980,206 @@ async function tryEnsureWritablePermission(handle) {
         st = await handle.requestPermission({ mode: "readwrite" });
     }
     return st === "granted";
+}
+
+function sanitizeExportBasename(title) {
+    const t = String(title || "song")
+        .replace(/[<>:"/\\|?*\u0000-\u001f]+/g, "_")
+        .trim();
+    return t || "song";
+}
+
+function buildSongExportPlainText(song) {
+    if (!song) return "";
+    ensureLineTypesLength(song);
+    const rowChars = PRINT_CHEAT_MONOSPACE_COLS;
+    const lines = [];
+    lines.push((song.songTitle || "Untitled").trim() || "Untitled");
+    const meta = [];
+    if (song.bpm != null && `${song.bpm}`.trim()) meta.push(`BPM ${song.bpm}`);
+    if (song.timeSignature && `${song.timeSignature}`.trim()) meta.push(`${song.timeSignature}`);
+    if (song.key && `${song.key}`.trim()) meta.push(`Key ${song.key}`);
+    if (meta.length) lines.push(meta.join(" • "));
+    lines.push("");
+    const maxM = getTotalMeasures(song);
+    if (maxM < 1) return lines.join("\n");
+    const allSegs = buildPrintLyricSegmentsForMeasureRange(song, 1, maxM);
+    const printedInst = new Set();
+
+    for (let line = 0; line < song.lines; line++) {
+        if (isLyricsOnlyLine(song, line)) {
+            const metaLo = song.lyricsOnlyLineMeta && song.lyricsOnlyLineMeta[line];
+            const lab = metaLo ? formatLyricsOnlyFlagText(metaLo) : "Lyrics row";
+            lines.push(`[${lab}]`);
+            const body = `${song.lyrics[line] ?? ""}`.trimEnd();
+            if (body) lines.push(body);
+            lines.push("");
+            continue;
+        }
+        if (shouldOmitGridLineForIntroOutroFullCompact(song, line)) continue;
+        const edgeSec = getIntroOutroCompactSectionIfLineStartsIt(song, line);
+        if (edgeSec) {
+            lines.push(isOutroKindSection(edgeSec) ? "OUTRO" : "INTRO");
+            lines.push("");
+            continue;
+        }
+        if (shouldSkipLineAfterInstrumentalPrinted(song, line, printedInst)) continue;
+        const instSec = takeInstrumentalSectionIfFirstIntersectingRow(song, line, printedInst);
+        if (instSec) {
+            lines.push("INSTRUMENTAL");
+            lines.push("");
+            printedInst.add(instPrintKey(instSec));
+            continue;
+        }
+        const fm = getFirstMeasureOnLine(song, line);
+        if (fm == null) continue;
+        if (isGridLineInsideContinuingMarkedPrintSegment(allSegs, fm)) continue;
+        const secStart = getSectionStartForMeasure(song, fm);
+        if (secStart) lines.push(formatSectionFlagText(secStart));
+        const lineSegs = allSegs.filter(seg => getMeasureBounds(song, seg.m0).line === line);
+        const chLine = buildPlainChordMonospaceLine(song, line, rowChars).trimEnd();
+        if (chLine.trim()) lines.push(chLine);
+        if (!lineSegs.length) {
+            lines.push("(—)");
+        } else {
+            for (const seg of lineSegs) {
+                const t = stripCurlyLyricPrintMarkers(seg.text || "").trim();
+                if (t) lines.push(t);
+            }
+        }
+        lines.push("");
+    }
+    return lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+}
+
+function buildSongExportWordHtml(song) {
+    const titleRaw = (song.songTitle || "Untitled").trim() || "Untitled";
+    const titleEsc = escapeHtmlForPrintCheatsheet(titleRaw);
+    const plain = buildSongExportPlainText(song);
+    const bodyInner = plain
+        .split("\n")
+        .map(line => {
+            const esc = escapeHtmlForPrintCheatsheet(line);
+            return `<p style="margin:0 0 6pt 0;font-family:Calibri,Carlito,Arial,sans-serif;font-size:11pt;">${esc || "&nbsp;"}</p>`;
+        })
+        .join("");
+    return (
+        `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" ` +
+        `xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">` +
+        `<meta name="ProgId" content="Word.Document"><title>${titleEsc}</title></head><body>${bodyInner}</body></html>`
+    );
+}
+
+function appendExportBlobDownload(blob, filename) {
+    const a = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function exportPickerStartInOpts() {
+    const pickerOpts = {};
+    const prefStartIn = normalizeSaveStartIn(appPrefs.saveStartIn);
+    if (prefStartIn === "preferredfolder" && preferredSaveFolderHandle) {
+        pickerOpts.startIn = preferredSaveFolderHandle;
+    } else if (prefStartIn !== "default") {
+        pickerOpts.startIn = prefStartIn;
+    }
+    return pickerOpts;
+}
+
+async function exportSongToTxt() {
+    if (activeTabIndex === -1) return;
+    const s = tabs[activeTabIndex];
+    const text = buildSongExportPlainText(s);
+    const base = sanitizeExportBasename(s.songTitle || "song");
+    const filename = base + ".txt";
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    if (typeof window.showSaveFilePicker === "function") {
+        try {
+            const pickerOpts = {
+                id: "songwriter-pro-export-txt",
+                suggestedName: filename,
+                types: [{ description: "Plain text", accept: { "text/plain": [".txt"] } }],
+                ...exportPickerStartInOpts()
+            };
+            const handle = await window.showSaveFilePicker(pickerOpts);
+            const w = await handle.createWritable();
+            await w.write(blob);
+            await w.close();
+            showToast("Exported text file.");
+            return;
+        } catch (e) {
+            if (e && e.name === "AbortError") return;
+        }
+    }
+    appendExportBlobDownload(blob, filename);
+    showToast("Downloaded " + filename);
+}
+
+async function exportSongToDoc() {
+    if (activeTabIndex === -1) return;
+    const s = tabs[activeTabIndex];
+    const html = buildSongExportWordHtml(s);
+    const base = sanitizeExportBasename(s.songTitle || "song");
+    const filename = base + ".doc";
+    const blob = new Blob([html], { type: "application/msword" });
+    if (typeof window.showSaveFilePicker === "function") {
+        try {
+            const pickerOpts = {
+                id: "songwriter-pro-export-doc",
+                suggestedName: filename,
+                types: [
+                    {
+                        description: "Word document",
+                        accept: { "application/msword": [".doc"], "text/html": [".doc", ".html"] }
+                    }
+                ],
+                ...exportPickerStartInOpts()
+            };
+            const handle = await window.showSaveFilePicker(pickerOpts);
+            const w = await handle.createWritable();
+            await w.write(blob);
+            await w.close();
+            showToast("Exported Word-openable file (HTML in a .doc shell).");
+            return;
+        } catch (e) {
+            if (e && e.name === "AbortError") return;
+        }
+    }
+    appendExportBlobDownload(blob, filename);
+    showToast("Downloaded " + filename + " (open in Word or similar).");
+}
+
+async function exportSongToLyricsTxt() {
+    if (activeTabIndex === -1) return;
+    const s = tabs[activeTabIndex];
+    const text = buildSongExportLyricsPlainText(s);
+    const base = sanitizeExportBasename(s.songTitle || "song");
+    const filename = base + "-lyrics.txt";
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    if (typeof window.showSaveFilePicker === "function") {
+        try {
+            const pickerOpts = {
+                id: "songwriter-pro-export-lyrics-txt",
+                suggestedName: filename,
+                types: [{ description: "Plain text (lyrics only)", accept: { "text/plain": [".txt"] } }],
+                ...exportPickerStartInOpts()
+            };
+            const handle = await window.showSaveFilePicker(pickerOpts);
+            const w = await handle.createWritable();
+            await w.write(blob);
+            await w.close();
+            showToast("Exported lyrics-only text file.");
+            return;
+        } catch (e) {
+            if (e && e.name === "AbortError") return;
+        }
+    }
+    appendExportBlobDownload(blob, filename);
+    showToast("Downloaded " + filename);
 }
 
 async function saveSongQuick() {
@@ -8813,8 +9338,11 @@ function init() {
             if (ev.target === printModeModal) closePrintModeModal();
         });
     }
-    if (printModeFullBtn) printModeFullBtn.addEventListener("click", () => startPrintWithMode("full"));
-    if (printModeCondensedBtn) printModeCondensedBtn.addEventListener("click", () => startPrintWithMode("condensed"));
+    if (printModeFullOnePageBtn) printModeFullOnePageBtn.addEventListener("click", () => startPrintWithOptions("full", true));
+    if (printModeCondensedOnePageBtn) printModeCondensedOnePageBtn.addEventListener("click", () => startPrintWithOptions("condensed", true));
+    if (printModeFullMultiBtn) printModeFullMultiBtn.addEventListener("click", () => startPrintWithOptions("full", false));
+    if (printModeLyricsOnlyBtn) printModeLyricsOnlyBtn.addEventListener("click", () => startPrintWithOptions("lyricsOnly", true));
+    if (printModeLyricsPlainBtn) printModeLyricsPlainBtn.addEventListener("click", () => startPrintWithOptions("lyricsPlain", true));
     if (printModeCancelBtn) printModeCancelBtn.addEventListener("click", () => closePrintModeModal());
     if (sectionLengthModalOk) sectionLengthModalOk.addEventListener("click", () => applySectionLengthModal());
     if (sectionLengthModalCancel) sectionLengthModalCancel.addEventListener("click", () => closeSectionLengthModal());
